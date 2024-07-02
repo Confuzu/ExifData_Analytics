@@ -10,6 +10,7 @@ ExifData Analytics is a toolbox designed for the analytical evaluation of EXIF m
 - Keyword Analysis with Keywords provided by the user, a txt file with Keywords or the default Keyword list
 - TF-IDF Analysis for important terms in metadata
 - Visualization of parameter frequencies and TF-IDF scores
+  
 
 ## Project Structure
 
@@ -17,7 +18,7 @@ The project consists of three main scripts:
 
 1. `DB_filler.py`: 
    - Responsible for executing ExifTool and managing user input for data extraction.
-   - Transfers data to the database operations script.
+   - Transfers data to the database operations script. 
 
 2. `parameter_statistic.py`:
    - Performs statistical evaluation of the data from the database.
@@ -53,6 +54,14 @@ You can change the settings in the `config.ini` ore use the default values:
 - Increase or Decrease Number of worker threads.<br /> 
   Adjust based on available CPU cores and desired parallelism. <br /> 
 
+- Example with:
+  ```
+  batch_size = 100
+  max_workers = 24
+  ```
+  On a Ryzen 9 3900x + SSD + 32GB  25k Images in 01:38 min data extracted and written to the Database
+
+  
 ### Image Metadata Extraction Script
    - In the command prompt or terminal, run:
      ```sh
