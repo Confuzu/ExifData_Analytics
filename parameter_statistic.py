@@ -1,5 +1,5 @@
 """
-parameter_statistic_claude.py
+parameter_statistic.py
 
 This script analyzes metadata from the ExifData Analytics project database,
 generating statistics, plots, and text reports on various parameters.
@@ -16,9 +16,10 @@ import pandas as pd
 import matplotlib.pyplot as plt
 from sklearn.feature_extraction.text import TfidfVectorizer
 import parameter_statistic_DB as db_module
+from pathlib import Path
 
 # Setup directories and logging
-script_dir = os.path.dirname(os.path.abspath(__file__))
+script_dir = Path(__file__).resolve().parent
 logging_dir = os.path.join(script_dir, 'LOG_files')
 os.makedirs(logging_dir, exist_ok=True)
 
@@ -192,9 +193,38 @@ def save_tfidf_analysis_to_text(top_n_words: List[str], top_n_scores: List[float
 
 def load_keywords_from_file(file_path: str) -> List[str]:
     """Loads keywords from a file."""
-    with open(file_path, 'r', encoding='utf-8') as file:
-        keywords = [line.strip() for line in file if line.strip()]
-    return keywords
+    try:
+        with open(file_path, 'r', encoding='utf-8') as file:
+            keywords = [line.strip() for line in file if line.strip()]
+        return keywords
+    except FileNotFoundError:
+        print(f"Keyword list file not found: {default_keywords_file}")
+        return []
+    except Exception as e:
+        print(f"Error reading Keyword list file: {e}")
+        return []   
+
+
+def load_default_keywords() -> List[str]:
+    """Loads default keywords from a file in the script directory. Creates the file if it doesn't exist."""
+    default_keywords_file = script_dir / 'default_keywords.txt'
+    
+    # Create the file if it doesn't exist
+    if not default_keywords_file.exists():
+        default_keywords_file.touch()
+        print(f"Created default keywords file: {default_keywords_file}")
+    
+    try:
+        with open(default_keywords_file, 'r', encoding='utf-8') as file:
+            keywords = [line.strip() for line in file if line.strip()]
+        
+        if not keywords:
+            print("Default keywords file is empty.")
+        
+        return keywords
+    except Exception as e:
+        print(f"Error reading default keywords file: {e}")
+        return []
 
 def main() -> None:
     db_path = input("Enter the path to the database file (press Enter to use the default 'statistics_image_metadata.db'): ").strip()
@@ -212,7 +242,7 @@ def main() -> None:
         parsed_df = parse_metadata(data_df)
         
         # User interaction for keywords and top models/samplers
-        keyword_source = input("Enter '1' to input keywords manually or '2' to load from a file: ").strip()
+        keyword_source = input("[Enter '1' to input keywords manually ] or [Enter '2' to load from a file] or [press Enter to use default keywords]: ").strip()
         if keyword_source == '1':
             keywords = input("Enter keywords (comma-separated): ").split(',')
             keywords = [keyword.strip() for keyword in keywords]
@@ -220,8 +250,8 @@ def main() -> None:
             file_path = input("Enter the path to the keyword file: ").strip()
             keywords = load_keywords_from_file(file_path)
         else:
-            print("Invalid option. Using default keywords.")
-            keywords = []
+            print("Using default keywords.")
+            keywords = load_default_keywords()
 
         top_models_n = int(input("Enter the number of top models to display (default is 3): ").strip() or "3")
         top_samplers_n = int(input("Enter the number of top samplers to display (default is 3): ").strip() or "3")
@@ -264,7 +294,7 @@ def main() -> None:
             
             sorted_keyword_counts = sorted(keyword_prompt_counts.items(), key=lambda x: x[1], reverse=True)
             
-            with open(os.path.join(output_dir, 'keyword_analysis.txt'), 'w', encoding='utf-8') as file:
+            with open(os.path.join(script_dir, 'keyword_analysis.txt'), 'w', encoding='utf-8') as file:
                 for keyword, count in sorted_keyword_counts:
                     file.write(f"Keyword: {keyword}\n")
                     file.write(f"Count: {count}\n")
