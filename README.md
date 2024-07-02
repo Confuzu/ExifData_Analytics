@@ -59,7 +59,7 @@ You can change the settings in the `config.ini` ore use the default values:
   batch_size = 100
   max_workers = 24
   ```
-  On a Ryzen 9 3900x + SSD + 32GB  25k Images in 01:38 min data extracted and written to the Database
+  On a 12 Core 24 Thread CPU + SSD + 32GB  25k Images in 01:38 min data extracted and written to the Database
 
   
 ### Image Metadata Extraction Script
