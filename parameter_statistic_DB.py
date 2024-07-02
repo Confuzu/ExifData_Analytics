@@ -14,7 +14,7 @@ Key features:
 
 Usage:
 This module is typically imported and used by other scripts in the project.
-It can also be run directly for a demonstration of its capabilities.
+It can also be run directly.
 """
 
 import sqlite3
@@ -307,6 +307,8 @@ def clear_database() -> None:
             cursor = conn.cursor()
             cursor.execute("DELETE FROM file_metadata")
             conn.commit()
+            cursor.execute("VACUUM")  # Reclaim disk space
+            conn.commit()
         logger.info("Database cleared successfully.")
     except sqlite3.Error as e:
         logger.error(f"Error clearing database: {e}")
@@ -382,43 +384,20 @@ def get_last_modified() -> float:
         logger.error(f"Error getting last modified time of database: {e}")
         raise
 
-# Search Operations
-def search_metadata(keyword: str) -> List[Tuple[str, str]]:
-    """Searches for a keyword in the metadata."""
-    try:
-        with db_connection() as conn:
-            cursor = conn.cursor()
-            cursor.execute("""
-                SELECT file_name, file_path
-                FROM file_metadata
-                WHERE metadata LIKE ? OR metadata_after_prompt LIKE ?
-            """, (f'%{keyword}%', f'%{keyword}%'))
-            return cursor.fetchall()
-    except sqlite3.Error as e:
-        logger.error(f"Error in search_metadata: {e}")
-        raise
 
 # Main Execution Block
 if __name__ == "__main__":
     print("ExifData Analytics - Database Operations Module")
     print("===============================================")
     print("\nAvailable functions:")
-    print("- create_table()")
-    print("- update_or_insert_metadata(file_name, file_path, metadata)")
-    print("- bulk_update_or_insert_metadata(records)")
-    print("- get_metadata(file_path)")
-    print("- get_metadata_batch(batch_size)")
-    print("- is_file_updated(file_path)")
-    print("- list_models_in_directory(directory)")
-    print("- optimize_database()")
-    print("- clear_database()")
-    print("- backup_database(backup_dir)")
-    print("- check_database_integrity()")
-    print("- get_database_stats()")
-    print("- get_database_size()")
-    print("- get_last_modified()")
-    print("- search_metadata(keyword)")
-    
+    print("- database_stats + optimize_database" )
+    print("- metadata_sample")
+    print("- check_database_integrity")
+    print("- backup_database")
+    print("- database_size")
+    print("- last_modified")
+    print("- clear_database")
+        
     choice = input("\nWould you like to run a quick database status check? (y/n): ").lower()
     if choice == 'y':
         try:
@@ -433,39 +412,31 @@ if __name__ == "__main__":
             
             optimize_database()
             print("\nDatabase optimization completed.")
-            
-            search_choice = input("\nWould you like to perform a keyword search? (y/n): ").lower()
-            if search_choice == 'y':
-                keyword = input("Enter search keyword: ")
-                results = search_metadata(keyword)
-                print(f"\nFound {len(results)} matches for '{keyword}':")
-                for file_name, file_path in results[:5]:  # Show only first 5 results
-                    print(f"- {file_name}: {file_path}")
-                if len(results) > 5:
-                    print(f"... and {len(results) - 5} more.")
-            
-            batch_choice = input("\nWould you like to see a sample of metadata batch processing? (y/n): ").lower()
-            if batch_choice == 'y':
-                batch_size = 10  # Small batch size for demonstration
-                start_time = time.time()
-                batch_generator = get_metadata_batch(batch_size)
-                first_batch = next(batch_generator)
-                print(f"\nProcessed first batch of {len(first_batch)} records in {time.time() - start_time:.4f} seconds.")
-                print("Sample record:")
-                print(f"File: {first_batch[0][0]}")
-                print(f"Path: {first_batch[0][1]}")
-                print(f"Last Modified: {first_batch[0][2]}")
-                print(f"Metadata: {first_batch[0][3][:100]}...")  # Show first 100 characters of metadata
-            
-            integrity_choice = input("\nWould you like to perform a database integrity check? (y/n): ").lower()
-            if integrity_choice == 'y':
-                if check_database_integrity():
-                    print("Database integrity check passed.")
-                else:
-                    print("Database integrity check failed. Please run a full check and consider restoring from a backup.")
-        
+
         except Exception as e:
-            print(f"An error occurred during the status check: {e}")
+            print(f"An error occurred during the status check: {e}")    
+           
+    batch_choice = input("\nWould you like to see a sample of metadata batch processing? (y/n): ").lower()
+    if batch_choice == 'y':
+        batch_size = 10  # Small batch size for demonstration
+        start_time = time.time()
+        batch_generator = get_metadata_batch(batch_size)
+        first_batch = next(batch_generator)
+        print(f"\nProcessed first batch of {len(first_batch)} records in {time.time() - start_time:.4f} seconds.")
+        print("Sample record:")
+        print(f"File: {first_batch[0][0]}")
+        print(f"Path: {first_batch[0][1]}")
+        print(f"Last Modified: {first_batch[0][2]}")
+        print(f"Metadata: {first_batch[0][3][:100]}...")  # Show first 100 characters of metadata
+    
+    integrity_choice = input("\nWould you like to perform a database integrity check? (y/n): ").lower()
+    if integrity_choice == 'y':
+        if check_database_integrity():
+            print("Database integrity check passed.")
+        else:
+            print("Database integrity check failed. Please run a full check and consider restoring from a backup.")
+        
+        
     
     # Always continue to this point, regardless of the status check choice
     backup_choice = input("\nWould you like to create a database backup? (y/n): ").lower()
@@ -476,9 +447,8 @@ if __name__ == "__main__":
         except Exception as e:
             print(f"An error occurred during the backup process: {e}")
 
-    print("\nAdditional operations:")
     
-    size_choice = input("Would you like to see the current database size? (y/n): ").lower()
+    size_choice = input("\nWould you like to see the current database size? (y/n): ").lower()
     if size_choice == 'y':
         try:
             size_mb = get_database_size() / (1024 * 1024)
@@ -486,7 +456,7 @@ if __name__ == "__main__":
         except Exception as e:
             print(f"Error getting database size: {e}")
 
-    last_modified_choice = input("Would you like to see when the database was last modified? (y/n): ").lower()
+    last_modified_choice = input("\nWould you like to see when the database was last modified? (y/n): ").lower()
     if last_modified_choice == 'y':
         try:
             last_modified = get_last_modified()
@@ -494,17 +464,18 @@ if __name__ == "__main__":
         except Exception as e:
             print(f"Error getting last modified time: {e}")
 
-    search_choice = input("Would you like to perform a metadata search? (y/n): ").lower()
-    if search_choice == 'y':
-        keyword = input("Enter the search keyword: ")
-        try:
-            results = search_metadata(keyword)
-            print(f"\nFound {len(results)} matches for '{keyword}':")
-            for file_name, file_path in results[:5]:  # Show only first 5 results
-                print(f"- {file_name}: {file_path}")
-            if len(results) > 5:
-                print(f"... and {len(results) - 5} more.")
-        except Exception as e:
-            print(f"Error during metadata search: {e}")
+    clear_database_prompt = input("\nWould you like to clear the database? (y/n): ").lower()
+    if clear_database_prompt == 'y':
+        confirm_clear = input("Are you absolutely sure you want to clear the database? This action cannot be undone. Type 'YES' to confirm: ").strip().upper()
+        if confirm_clear == 'YES':
+            try:
+                clear_database()
+                print("Database cleared successfully.")
+            except Exception as e:
+                print(f"Error clearing database: {e}")
+        else:
+            print("Database clear operation cancelled.")
+    else:
+        print("Database clear operation cancelled.")
 
-    print("\nModule parameter_statistic_DB.py demonstration complete.")
+    print("\nAll operations complete. Exiting.")
