@@ -162,9 +162,18 @@ def save_parameter_counts_to_text(parameter_counts: Dict[str, pd.Series], output
 
 def tfidf_analysis(text_data: pd.Series, top_n: int = 20) -> Tuple[List[str], List[float]]:
     """Performs TF-IDF analysis on text data."""
-    vectorizer = TfidfVectorizer(max_features=1000)
+    logger_statistics.debug(f"Performing TF-IDF analysis on {len(text_data)} records.")
+    logger_statistics.debug(f"Sample text: {text_data.iloc[0] if not text_data.empty else 'No data'}")
+    
+    vectorizer = TfidfVectorizer(max_features=1000, stop_words='english')
     X = vectorizer.fit_transform(text_data)
     feature_array = vectorizer.get_feature_names_out()
+    logger_statistics.debug(f"Number of features: {len(feature_array)}")
+    
+    if len(feature_array) == 0:
+        logger_statistics.error("No features found in the text data.")
+        return [], []
+    
     tfidf_sorting = X.toarray().sum(axis=0).argsort()[::-1]
     top_n_words = [feature_array[i] for i in tfidf_sorting[:top_n]]
     top_n_scores = [X[:, i].sum() for i in tfidf_sorting[:top_n]]
@@ -239,7 +248,12 @@ def main() -> None:
     
     try:
         data_df = extract_data()
+        logger_statistics.debug(f"Extracted {len(data_df)} records from the database.")
+        logger_statistics.debug(f"Sample metadata: {data_df['metadata'].iloc[0] if not data_df.empty else 'No data'}")
+        
         parsed_df = parse_metadata(data_df)
+        logger_statistics.debug(f"Parsed {len(parsed_df)} records.")
+        logger_statistics.debug(f"Sample parsed prompt: {parsed_df['prompt'].iloc[0] if not parsed_df.empty else 'No data'}")
         
         # User interaction for keywords and top models/samplers
         keyword_source = input("[Enter '1' to input keywords manually ] or [Enter '2' to load from a file] or [press Enter to use default keywords]: ").strip()
