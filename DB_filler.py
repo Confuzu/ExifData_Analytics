@@ -110,8 +110,8 @@ def get_blocked_paths() -> List[Path]:
     """
     # Check if blocklist is disabled (NOT RECOMMENDED)
     if not ENABLE_BLOCKLIST:
-        logger.warning("⚠️  SECURITY: Blocklist is DISABLED in config.ini")
-        logger.warning("   This is NOT recommended and reduces security!")
+        logger.warning(" SECURITY: Blocklist is DISABLED in config.ini")
+        logger.warning(" This is NOT recommended and reduces security!")
         return []
 
     blocked = [
@@ -369,7 +369,7 @@ def validate_directory(source_directory: str, include_subfolders: bool = False) 
         logger.warning(f"Network path detected: {user_path}")
 
         if not ALLOW_NETWORK_NO_CONFIRM:
-            print(f"\n⚠️  Warning: Network path detected: {user_path}")
+            print(f"\n Warning: Network path detected: {user_path}")
             print()
             print("Scanning network paths can be slow and may access untrusted data.")
             print("Ensure you trust the network source before continuing.")
@@ -390,7 +390,7 @@ def validate_directory(source_directory: str, include_subfolders: bool = False) 
         logger.warning(f"  Input:    {source_directory}")
         logger.warning(f"  Resolved: {user_path}")
 
-        print(f"\n⚠️  Notice: Path resolved via symlink")
+        print(f"\n Notice: Path resolved via symlink")
         print(f"   You entered: {source_directory}")
         print(f"   Resolved to: {user_path}")
         print()
@@ -401,8 +401,8 @@ def validate_directory(source_directory: str, include_subfolders: bool = False) 
             logger.info("User cancelled due to symlink resolution")
             return None, "User cancelled"
 
-    logger.info(f"✅ Validated directory: {user_path}")
-    logger.info(f"   Recursive mode: {include_subfolders}")
+    logger.info(f" Validated directory: {user_path}")
+    logger.info(f" Recursive mode: {include_subfolders}")
 
     # Return the validated path (becomes allowed_root for whitelist)
     return user_path, None
@@ -441,7 +441,7 @@ def collect_image_files(directory: Path, include_subfolders: bool) -> Tuple[List
 
         # SECURITY: Whitelist validation - ensure file is within allowed directory
         if not validate_file_path(file_path, allowed_root):
-            print(f"⚠️  Skipped (outside allowed directory): {file_path}")
+            print(f"  Skipped (outside allowed directory): {file_path}")
             skipped_count += 1
             continue
 
@@ -550,7 +550,7 @@ def update_database_with_images(image_files: List[str], exiftool_cmd: str) -> No
                 # Check if we should stop on error
                 if not CONTINUE_ON_ERROR:
                     logger.error("CONTINUE_ON_ERROR is False, stopping processing")
-                    print(f"\n❌ Error encountered and continue_on_error=false in config")
+                    print(f"\n Error encountered and continue_on_error=false in config")
                     print(f"   Failed file: {Path(filepath).name}")
                     print(f"   Error: {error}")
                     print(f"\nProcessing stopped. {success_count}/{total_count} files processed successfully.")
@@ -573,8 +573,8 @@ def update_database_with_images(image_files: List[str], exiftool_cmd: str) -> No
     print("PROCESSING SUMMARY")
     print(f"{'='*70}")
     print(f"Total files: {total_count}")
-    print(f"✅ Successfully processed: {success_count} ({success_count/total_count*100:.1f}%)")
-    print(f"❌ Failed: {len(error_details)} ({len(error_details)/total_count*100:.1f}%)")
+    print(f" Successfully processed: {success_count} ({success_count/total_count*100:.1f}%)")
+    print(f" Failed: {len(error_details)} ({len(error_details)/total_count*100:.1f}%)")
 
     if error_stats:
         print(f"\nError Breakdown:")
@@ -618,7 +618,7 @@ def main() -> None:
 
     if skipped_count > 0:
         logger.warning(f"Skipped {skipped_count} files outside allowed directory (symlink escapes)")
-        print(f"\n⚠️  Skipped {skipped_count} files for security (outside allowed directory)")
+        print(f"\n  Skipped {skipped_count} files for security (outside allowed directory)")
 
     if not image_files:
         logger.warning("No valid image files found in the specified directory.")
@@ -626,7 +626,7 @@ def main() -> None:
         sys.exit(0)
 
     logger.info(f"Found {len(image_files)} valid image files to process")
-    print(f"\n✅ Found {len(image_files)} valid image files")
+    print(f"\n Found {len(image_files)} valid image files")
 
     update_database_with_images(image_files, exiftool_cmd)
     print("Database update completed successfully.")
