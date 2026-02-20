@@ -4,30 +4,43 @@ ExifData Analytics is a toolbox designed for the analytical evaluation of EXIF m
 
 ## Key Features
 
+**Analytics**
 - Metadata Extraction and Normalization
-- Database Management for metadata entries
+- Database Management for metadata entries with integritiy Checks
 - Parameter Analysis (Sampler, CFG scale, Size, Model, VAE, Denoising strength)
 - Keyword Analysis with Keywords provided by the user, a txt file with Keywords or the default Keyword list
 - TF-IDF Analysis for important terms in metadata
 - Visualization of parameter frequencies and TF-IDF scores
+- 
+**Advanced Analytics**
+- Correlation analysis (parameter co-occurrence patterns)
+- Prompt effectiveness analysis (essential vs variable tags)
+- Parameter recommendations (3-strategy recommendation engine)
+- Dataset comparison (side-by-side statistical analysis)
+- Trend detection (temporal parameter evolution)
   
 
 ## Project Structure
 
 The project consists of three main scripts:
 
-1. `DB_filler.py`: 
+1. **`DB_filler.py`:**
    - Responsible for executing ExifTool and managing user input for data extraction.
    - Transfers data to the database operations script. 
 
-2. `parameter_statistic.py`:
+2. **`parameter_statistic.py`:**
    - Performs statistical evaluation of the data from the database.
    - Analyzes various parameters and generates visualizations and text reports.
 
-3. `parameter_statistic_DB.py`:
+3. **`parameter_statistic_DB.py`:**
    - Handles database operations, including inserting and updating metadata entries.
    - Provides functions for data retrieval and database management.
-
+  
+4. **`advanced_analytics.py`:**
+   - Advanced correlation and trend analysis
+   - Parameter recommendations based on historical usage
+   - Dataset comparison tools
+   - Prompt effectiveness analysis
 
 ## How to Use
 
@@ -43,6 +56,8 @@ pip install -r requirements.txt
 ## Configuration 
 
 You can change the settings in the `config.ini` ore use the default values:
+
+### Basic Settings
 - change the Logging directory
   
 - choose another Database name
@@ -60,6 +75,17 @@ You can change the settings in the `config.ini` ore use the default values:
   max_workers = 24
   ```
   On a 12 Core 24 Thread CPU + SSD + 32GB  25k Images in 01:38 min data extracted and written to the Database
+
+### Security Settings 
+- **`enable_blocklist`** - Enable/disable security blocklist (default: true, NOT recommended to disable)
+- **`custom_blocked_paths`** - Add custom sensitive paths to block (comma-separated)
+- **`allow_network_paths_without_confirmation`** - Skip network path warnings for automation (default: false)
+
+### Error Handling Settings 
+- **`continue_on_error`** - Continue processing if some files fail (default: true)
+- **`exiftool_timeout`** - Maximum time to wait per file in seconds (default: 30)
+- **`max_file_size_mb`** - Skip files larger than this to avoid hanging (default: 100, 0=unlimited)
+
 
   
  ### Image Metadata Extraction Script
@@ -93,6 +119,48 @@ You can change the settings in the `config.ini` ore use the default values:
    - `database_size`: Returns the current size of the database file.
    - `last_modified`: Retrieves the last modification date of the database.
    - `clear_database`: Removes all records from the database.
+
+### Advanced Analytics Script
+   - After metadata extraction, run advanced analytics for deeper insights:
+     ```bash
+     python advanced_analytics.py --all
+     ```
+   **Features:**
+
+   - **Correlation Analysis** - Discover parameter co-occurrence patterns
+     ```bash
+     python advanced_analytics.py --correlations
+     ```
+     Outputs: Top parameter combinations, model+sampler frequencies
+
+   - **Prompt Effectiveness** - Analyze prompt patterns and tag usage
+     ```bash
+     python advanced_analytics.py --prompt-analysis
+     ```
+     Outputs: Essential tags (>90% frequency), variable tags, prompt template
+
+   - **Parameter Recommendations** - Get suggestions based on historical usage
+     ```bash
+     python advanced_analytics.py --recommend "sampler=Heun,model=YourModel"
+     ```
+     Outputs: Most-used combinations, similar settings, experimental suggestions
+
+   - **Dataset Comparison** - Compare two filtered subsets statistically
+     ```bash
+     python advanced_analytics.py --compare "model=ModelA" "model=ModelB"
+     ```
+     Outputs: Side-by-side parameter distributions, usage percentages
+
+   - **Trend Detection** - Analyze parameter evolution over time
+     ```bash
+     python advanced_analytics.py --trends
+     ```
+     Outputs: Quarterly parameter evolution, drift detection
+
+   **All reports saved to:** `advanced_analytics/` directory
+
+   **Performance:** ~3 seconds for 5,000 images
+   
 
 ### Data Examples
 
@@ -192,7 +260,59 @@ You can change the settings in the `config.ini` ore use the default values:
 
 ![CFG scale_counts](https://github.com/Confuzu/ExifData_Analytics/assets/133601702/0fd8bad7-ce1a-4398-9f4c-9579988ed9aa)
 
-    
+### Advanced Analytics Examples
+
+  - **correlation_analysis.txt**
+    ```
+    Top Parameter Combinations (Sampler + CFG + Denoising):
+    1. DPM++ 2M Karras | CFG:5.5 | Denoise:0.37    1721 (33.7%)
+    2. Heun | CFG:5.5 | Denoise:0.37               1703 (33.3%)
+    3. Euler a | CFG:5.5 | Denoise:0.37            1669 (32.7%)
+
+    Top Model + Sampler Combinations:
+    1. ModelA + DPM++ 2M Karras    878 (17.2%)
+    2. ModelB + DPM++ 2M Karras    860 (16.8%)
+    ...
+    ```
+
+  - **prompt_effectiveness.txt**
+    ```
+    ESSENTIAL TAGS (>90% frequency):
+      masterpiece           5110 (100.0%)
+      solo                  5110 (100.0%)
+      best quality          5110 (100.0%)
+
+    VARIABLE TAGS (<50% frequency):
+      bunker                259 (5.1%)
+      attic                 170 (3.3%)
+
+    PROMPT TEMPLATE:
+      [essential tags], [VARIABLE LOCATION]
+    ```
+
+  - **trend_analysis.txt**
+    ```
+    Parameter Evolution:
+
+    Q1 (Earliest): Euler a (65%) + ModelA (100%)
+    Q2:            Heun (66%) + ModelA (100%)
+    Q3:            Euler a (66%) + ModelB (99%)
+    Q4 (Latest):   Heun (66%) + ModelB (100%)
+
+    Insight: Systematic A/B testing detected
+    ```
+
+  - **comparison_ModelA_vs_ModelB.txt**
+    ```
+    Dataset 1 (ModelA): 2563 images
+    Dataset 2 (ModelB): 2547 images
+
+    Sampler Distribution:
+                        Dataset 1      Dataset 2
+    DPM++ 2M Karras     878 (34.3%)    860 (33.8%)
+    Heun                856 (33.4%)    847 (33.3%)
+    Euler a             829 (32.3%)    840 (33.0%)
+    ```
 
 ### Acknowledgements
   Thanks to Phil Harvey for his awesome exif data tool https://exiftool.org
