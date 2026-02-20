@@ -11,14 +11,18 @@ ExifData Analytics is a toolbox designed for the analytical evaluation of EXIF m
 - Keyword Analysis with Keywords provided by the user, a txt file with Keywords or the default Keyword list
 - TF-IDF Analysis for important terms in metadata
 - Visualization of parameter frequencies and TF-IDF scores
-- 
+ 
 **Advanced Analytics**
 - Correlation analysis (parameter co-occurrence patterns)
 - Prompt effectiveness analysis (essential vs variable tags)
 - Parameter recommendations (3-strategy recommendation engine)
 - Dataset comparison (side-by-side statistical analysis)
 - Trend detection (temporal parameter evolution)
-  
+
+**Performance**
+- Advanced analytics: ~3 seconds for 5,000 images
+- Metadata extraction: ~260 images/second (tested on 12-core system)
+  On a 12 Core 24 Threads CPU + SSD + 32GB  25k Images in 01:38 min data extracted and written to the Database
 
 ## Project Structure
 
@@ -74,7 +78,6 @@ You can change the settings in the `config.ini` ore use the default values:
   batch_size = 100
   max_workers = 24
   ```
-  On a 12 Core 24 Thread CPU + SSD + 32GB  25k Images in 01:38 min data extracted and written to the Database
 
 ### Security Settings 
 - **`enable_blocklist`** - Enable/disable security blocklist (default: true, NOT recommended to disable)
@@ -125,8 +128,6 @@ You can change the settings in the `config.ini` ore use the default values:
      ```bash
      python advanced_analytics.py --all
      ```
-   **Features:**
-
    - **Correlation Analysis** - Discover parameter co-occurrence patterns
      ```bash
      python advanced_analytics.py --correlations
@@ -314,7 +315,35 @@ You can change the settings in the `config.ini` ore use the default values:
     Euler a             829 (32.3%)    840 (33.0%)
     ```
 
+# Update History
+
+### Version 1.1 - February 2026
+
+**Advanced Analytics Module**
+- Added `advanced_analytics.py` for in-depth parameter analysis
+- Correlation analysis: Discover parameter co-occurrence patterns
+- Prompt effectiveness: Analyze tag usage and extract templates
+- Parameter recommendations: Get suggestions based on historical data
+- Dataset comparison: Compare filtered subsets statistically
+- Trend detection: Track parameter evolution over time
+
+**Security Enhancements**
+- Path validation (blocklist + whitelist)
+- Configurable security settings in `config.ini`
+- Custom blocked paths support
+- Network path detection and warnings
+
+**Error Handling Improvements**
+- Robust file validation (magic bytes, size limits, permissions)
+- Categorized error reporting (8 error types)
+- Continue-on-error mode with detailed statistics
+- ExifTool timeout protection
+- Processing summary with success/failure breakdown
+
+**Configuration**
+- `[Security]` section for path protection settings
+- `[ErrorHandling]` section for robust processing
+
+
 ### Acknowledgements
   Thanks to Phil Harvey for his awesome exif data tool https://exiftool.org
-
-    
